@@ -31,10 +31,15 @@ with torch.no_grad():
     audio_emb = audio_emb / audio_emb.norm(dim=1, keepdim=True)  # 正規化
 
     # ------- Text side -------
-    text_emb = model.get_text_embedding([text_prompt])  # ← NumPy (1, D)
-    text_emb = torch.as_tensor(text_emb, device=device)
-    text_emb = text_emb / text_emb.norm(dim=1, keepdim=True)
-
-# ------- Cosine similarity -------
-score = float((audio_emb @ text_emb.T).item())
-print(f"Similarity(Lemon ↔ 『{text_prompt}』): {score:.4f}")
+    candidates = [
+        "Kenshi Yonezu",  # ローマ字
+        "Japanese singer Kenshi Yonezu",
+        "This song is performed by Kenshi Yonezu",
+        "This song is written or performed by 米津玄師",
+    ]
+    for p in candidates:
+        text_emb = model.get_text_embedding([p])
+        text_emb = torch.as_tensor(text_emb, device=device)
+        text_emb = text_emb / text_emb.norm(dim=1, keepdim=True)
+        score = float((audio_emb @ text_emb.T).item())
+        print(f"{p:<40}: {score:+.4f}")
