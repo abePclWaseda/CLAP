@@ -21,8 +21,13 @@ class_index_dict = {v: k for v, k in json.load(open(class_index_dict_path)).item
 
 # Get all the data
 import os
-audio_files = sorted(glob.glob(os.path.join(esc50_test_dir, '**', '*.flac'), recursive=True))
-json_files = sorted(glob.glob(esc50_test_dir + "**/*.json", recursive=True))
+
+audio_files = sorted(
+    glob.glob(os.path.join(esc50_test_dir, "**", "*.flac"), recursive=True)
+)
+json_files = sorted(
+    glob.glob(os.path.join(esc50_test_dir, "**", "*.json"), recursive=True)
+)
 ground_truth_idx = [
     class_index_dict[json.load(open(jf))["tag"][0]] for jf in json_files
 ]
