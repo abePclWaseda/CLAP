@@ -13,8 +13,8 @@ esc50_test_dir = (
 class_index_dict_path = "./class_labels/ESC50_class_labels_indices_space.json"
 
 # Load the model
-model = laion_clap.CLAP_Module(enable_fusion=False, device=device)
-model.load_ckpt()
+model = laion_clap.CLAP_Module(enable_fusion=False, amodel="HTSAT-base", device=device)
+model.load_ckpt("/home/yuabe/checkpoints/music_audioset_epoch_15_esc_90.14.pt")
 
 # Get the class index dict
 class_index_dict = {v: k for v, k in json.load(open(class_index_dict_path)).items()}
