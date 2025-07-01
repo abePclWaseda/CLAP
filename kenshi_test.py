@@ -31,15 +31,14 @@ with torch.no_grad():
     audio_emb = audio_emb / audio_emb.norm(dim=1, keepdim=True)  # 正規化
 
     # ------- Text side -------
-    candidates = [
-        "Kenshi Yonezu",  # ローマ字
-        "Japanese singer Kenshi Yonezu",
+    prompts = [
         "This song is performed by Kenshi Yonezu",
-        "This song is written or performed by 米津玄師",
+        "Kenshi Yonezu wrote this song",
+        "米津玄師 の楽曲です",
     ]
-    for p in candidates:
-        text_emb = model.get_text_embedding([p])
-        text_emb = torch.as_tensor(text_emb, device=device)
-        text_emb = text_emb / text_emb.norm(dim=1, keepdim=True)
-        score = float((audio_emb @ text_emb.T).item())
-        print(f"{p:<40}: {score:+.4f}")
+    text_emb = torch.as_tensor(model.get_text_embedding(prompts), device=device).mean(
+        0, keepdim=True
+    )
+    text_emb /= text_emb.norm()
+    score = float((audio_emb @ text_emb.T).item())
+    print(f"Ensemble score: {score:.4f}")
