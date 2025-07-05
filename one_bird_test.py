@@ -34,9 +34,9 @@ audio_emb = torch.tensor(
 
 # ---------- 類似度 & 予測 ----------
 sim = (audio_emb @ text_emb.T).squeeze(0)  # (C,)
-top_idx = int(torch.argmax(sim))
-pred_label = idx2label[top_idx]
-score = sim[top_idx].item()
+topk_scores, topk_indices = torch.topk(sim, k=5)  # スコアとインデックス
 
-print(f"Pred label : {pred_label}")
-print(f"Similarity : {score:.4f}")
+print("Top-5 predictions:")
+for rank, (idx, score) in enumerate(zip(topk_indices.tolist(), topk_scores.tolist()), 1):
+    label = idx2label[idx]
+    print(f"{rank}. {label:10s}  score = {score:.4f}")
