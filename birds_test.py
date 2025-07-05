@@ -5,6 +5,9 @@ import glob
 import torch
 import numpy as np
 
+if not hasattr(np.random, "integers"):  # NumPy 2.0 対策
+    np.random.integers = np.random.randint
+
 # ===== 設定 =====
 device = torch.device("cuda:1")
 birdsong_dir = "/mnt/work-qnap/yuabe/kaggle/birdsong/train_audio"
@@ -22,8 +25,8 @@ index2label = {v: k for k, v in label2index.items()}
 # ===== クラス名リストとテキスト埋め込み作成 =====
 all_class_names = list(label2index.keys())
 all_texts = ["This is a sound of " + name for name in all_class_names]
-text_embed = model.get_text_embedding(all_texts)
-text_embed = torch.tensor(text_embed).to(device)
+text_embed_np = model.get_text_embedding(all_texts)
+text_embed = torch.tensor(text_embed_np, dtype=torch.float32).to(device)
 
 # ===== 音声ファイルと正解ラベルの収集 =====
 audio_paths = []
@@ -41,13 +44,15 @@ print(f"Found {len(audio_paths)} audio files.")
 
 # ===== 推論とランキング =====
 with torch.no_grad():
-    audio_embed = model.get_audio_embedding_from_filelist(audio_paths)
-    audio_embed = torch.tensor(audio_embed).to(device)
+    audio_embed_np = model.get_audio_embedding_from_filelist(audio_paths)
+    audio_embed = torch.tensor(audio_embed_np, dtype=torch.float32).to(device)
 
     similarity = audio_embed @ text_embed.T  # (N, C)
     ranking = torch.argsort(similarity, descending=True, dim=1)
 
-    ground_truth = torch.tensor(ground_truth_indices).to(device).view(-1, 1)
+    ground_truth = (
+        torch.tensor(ground_truth_indices, dtype=torch.long).to(device).view(-1, 1)
+    )
     preds = torch.where(ranking == ground_truth)[1].cpu().numpy()
 
 # ===== メトリクスの計算 =====
